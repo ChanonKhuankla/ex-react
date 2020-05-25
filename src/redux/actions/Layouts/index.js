@@ -24,3 +24,7 @@ export default function (state = initialState, data) {
 export const changePage = (page) => async (dispatch) => {
     return dispatch(push(page))
 }
+
+export const goBackPage = () => async (dispatch) => {
+    return dispatch(goBack())
+}

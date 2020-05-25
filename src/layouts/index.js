@@ -5,7 +5,9 @@ import { Layout, Menu, Breadcrumb } from 'antd';
 import { UserOutlined, LaptopOutlined, NotificationOutlined } from '@ant-design/icons';
 import { withRouter } from 'react-router-dom';
 import { changePage } from '../redux/actions/Layouts'
+import { logoutUser } from '../redux/actions/Users'
 
+import firebase from '../services/FirebaseServices'
 import './layouts.css'
 const { SubMenu } = Menu;
 const { Header, Content, Sider } = Layout;
@@ -28,30 +30,37 @@ class Layouts extends Component {
         }
     }
     onClickMenu = ({ item, key, keyPath, domEvent }) => {
-        console.log('key',typeof key);
-        
+        console.log('key', key);
+
         this.setState({ selectMenu: key })
         if (key === '1') {
             this.props.changePage('/users')
         } else if (key === '2') {
             this.props.changePage('/profile')
+        } else if (key === '3') {
+            this.props.logoutUser()
         }
     }
 
     render() {
+        console.log('Users', this.props.Users);
+        const { users } = this.props.Users
         return (
             <Layout>
                 <Header className="header">
                     <div className="logo" />
                     <Menu onClick={this.onClickMenu} theme="dark" mode="horizontal" selectedKeys={[this.state.selectMenu]}>
                         <Menu.Item key="1" >Users</Menu.Item>
-                        <Menu.Item key="2">Profile</Menu.Item>
+                        <SubMenu key="sub1" icon={<UserOutlined />} title={users && users.email} style={{ float: 'right' }}>
+                            <Menu.Item key="2">Profile Edit</Menu.Item>
+                            <Menu.Item key="3">Logout</Menu.Item>
+                        </SubMenu>
                     </Menu>
+
                 </Header>
                 <Layout>
                     <Layout style={{ padding: '0 24px 24px' }}>
                         <Breadcrumb style={{ margin: '16px 0' }}>
-
                         </Breadcrumb>
                         <Content
                             className="site-layout-background"
@@ -72,14 +81,16 @@ class Layouts extends Component {
 
 const mapStateToProps = (state) => {
     return {
-        history: state.history
+        history: state.history,
+        Users: state.Users
     }
 }
 
 const mapDispatchToProps = (dispatch) => {
     return bindActionCreators(
         {
-            changePage
+            changePage,
+            logoutUser
         }, dispatch
     )
 }

@@ -33,9 +33,25 @@ export default function (state = initialState, data) {
         default: return state;
     }
 }
+
+export const logoutUser = () => async (dispatch) => {
+    dispatch({ type: LOADDING_USER, value: true })
+    const users = await firebase.getAuth().logout()
+    dispatch(push('/'))
+    dispatch({ type: LOADDING_USER, value: false })
+}
+
+export const editProfile = (password) => async (dispatch) => {
+    const users = await firebase.getAuth().newPassword(password)
+    console.log('editProfile',users);
+    
+}
+
 export const loginUser = (usersname, password) => async (dispatch) => {
     dispatch({ type: LOADDING_USER, value: true })
     const users = await firebase.getAuth().login(usersname, password)
+    console.log('loginUser', users);
+
     dispatch({ type: LOADDING_USER, value: false })
     if (users) {
         await swal({
@@ -53,6 +69,34 @@ export const loginUser = (usersname, password) => async (dispatch) => {
 
 }
 
+export const createUser = () => async (dispatch) => {
+    dispatch(push('/users/create'))
+}
+
+export const editUser = (query) => async (dispatch) => {
+    console.log('query', query);
+    dispatch(push('/users/edit?id=' + query))
+}
+
+
+export const createEmailUser = (data) => async (dispatch) => {
+    // const users = await firebase.getAuth().createNewUser(data.username, data.password)
+    const respon = {
+        // uid : users.uid,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        age: data.age,
+        phone: data.phone,
+        address: data.address,
+    }
+    const profileUser = await firebase.getDatabase().addUser(respon)
+    if (profileUser) {
+        dispatch(push('/users'))
+
+    }
+
+}
+
 export const getUsers = () => async (dispatch) => {
     let users = await firebase.getAuth().onAuthStateChanged()
     if (users) {
@@ -60,22 +104,37 @@ export const getUsers = () => async (dispatch) => {
     }
 }
 
-export const getUserList = () => async (dispatch) => {
-    console.log('getUserList');
+export const updateUsers = (data, id) => async (dispatch) => {
+    
+    const result = await firebase.getDatabase().updateUser(id, data)
+    if (result) {
+        dispatch(push('/users'))
+    }
+
+}
+export const deleteUser = (id) => async (dispatch) => {
+    const result = await firebase.getDatabase().deleteUser(id)
+    dispatch(getUserList())
+}
+
+export const getUserList = () => async (dispatch, getState) => {
     let users = []
     dispatch({ type: LOADDING_USER, value: true })
-
+    const user = getState().Users.users
+    console.log('user',user);
+    
     const usersList = await firebase.getDatabase().getUser()
     try {
         usersList.forEach(doc => {
-            console.log(doc.id, '=>', doc.data().firstName);
+            // if(user.uid === doc.data().uid) return
             users.push({
                 firstName: doc.data().firstName,
                 lastName: doc.data().lastName,
-                phone: doc.data().Phone,
-                address: doc.data().Address,
+                phone: doc.data().phone,
+                address: doc.data().address,
                 age: doc.data().age,
-                id: doc.id
+                id: doc.id,
+                uid: doc.data().uid,
             })
         })
 

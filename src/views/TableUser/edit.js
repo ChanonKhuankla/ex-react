@@ -2,11 +2,15 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import React, { Component, Fragment } from 'react';
 import { withRouter } from 'react-router-dom';
-import { getUserList, getUsers, createUser, createEmailUser , editProfile , updateUsers  } from "../../redux/actions/Users";
-import { Form, Input, Button, Radio, InputNumber } from 'antd';
+import { getUserList, getUsers, createUser, createEmailUser, updateUsers } from "../../redux/actions/Users";
 import { changePage } from "../../redux/actions/Layouts";
+
+import './TableUser.css'
+import { Form, Input, Button, Radio, InputNumber } from 'antd';
+import queryString from 'query-string';
 import Container from 'react-bootstrap/Container'
 import { Spin } from 'antd';
+
 class TableUserCreate extends Component {
 
     constructor(props) {
@@ -17,12 +21,10 @@ class TableUserCreate extends Component {
     async componentDidMount() {
         await this.props.getUsers()
         await this.props.getUserList()
-        const { usersList, users } = this.props.Users
-
-        const user = usersList.find(f => f.uid === this.props.Users.users.uid)
-        console.log('user', user);
-
-        if (!user) {
+        const { usersList } = this.props.Users
+        const { id } = queryString.parse(this.props.location.search)
+        const user = usersList.find(f => f.id === id)
+        if (!id || !user) {
             this.props.changePage('/users')
         } else {
             this.setState(user)
@@ -30,23 +32,11 @@ class TableUserCreate extends Component {
     }
 
     onFinish = async values => {
-        console.log('onFinish', values);
-        if (values.password !== undefined) {
-            await this.props.editProfile(values.password)
-        }
-        const user = {
-            firstName : values.firstName,
-            lastName : values.lastName,
-            age : values.age,
-            phone : values.phone,
-            address : values.address,
-            uid: this.props.Users.users.uid
-        }
-        await this.props.updateUsers(user, this.state.id)
+        await this.props.updateUsers(values,this.state.id)
     };
 
     render() {
-        const { isLoading, usersList, users } = this.props.Users
+        const { isLoading } = this.props.Users
         const validateMessages = {
             required: 'Please input your ${label}',
             types: {
@@ -56,6 +46,7 @@ class TableUserCreate extends Component {
                 range: '${label} must be between ${min} and ${max}',
             },
         };
+
         if (isLoading || !this.state) {
             return (
                 <>
@@ -67,62 +58,18 @@ class TableUserCreate extends Component {
                 </>
             )
         }
+
         return (
+
             <>
                 <div className="table-user">
-                    <h3>Profile</h3>
+                    <h3>Edit Users</h3>
                 </div>
                 <Form
                     layout={'vertical'}
                     onFinish={this.onFinish}
                     validateMessages={validateMessages}
                 >
-                    <Form.Item label="Email">
-                        <Input placeholder="Email" value={users.email} defaultValue={users.email} disabled />
-                    </Form.Item>
-                    <Form.Item label="Password" name="password">
-                        <Input.Password placeholder="Password" />
-                    </Form.Item>
-                    <Form.Item
-                        name="confirm"
-                        label="Confirm Password"
-                        dependencies={['password']}
-                        hasFeedback
-                        rules={[
-                            ({ getFieldValue }) => ({
-                                validator(rule, value) {
-                                    let password = undefined
-                                    let conpass = undefined
-                                    console.log('getFieldValue(password)', getFieldValue('password'));
-                                    console.log('value', value === '');
-                                    if (getFieldValue('password') === '') {
-                                        password = undefined
-                                    } else {
-                                        password = getFieldValue('password')
-                                    }
-
-                                    if (value === '') {
-                                        conpass = undefined
-                                    } else {
-                                        conpass = value
-                                    }
-                                    console.log('password', password);
-                                    console.log('conpass', conpass);
-                                    console.log('!password && !value', !password || !conpass);
-
-                                    if ((password || conpass) && password !== conpass) {
-                                        console.log('zxczxc');
-
-                                        return Promise.reject('The two passwords that you entered do not match!');
-                                    }
-                                    return Promise.resolve();
-
-                                },
-                            }),
-                        ]}
-                    >
-                        <Input.Password />
-                    </Form.Item>
                     <Form.Item label="First Name" initialValue={this.state.firstName} name="firstName" rules={[{ required: true }]}>
                         <Input placeholder="First Name" value={this.state.firstName} defaultValue={this.state.firstName} />
                     </Form.Item>
@@ -168,8 +115,7 @@ const mapDispatchToProps = (dispatch) => {
             createUser,
             createEmailUser,
             changePage,
-            editProfile,
-            updateUsers 
+            updateUsers
         }, dispatch
     )
 }

@@ -11,13 +11,15 @@ import configStore, { history } from './redux/configureStore';
 import Layouts from './layouts'
 import {
 	Home,
-	TableUser,
 	Profile
 } from './views';
+
+import { Table, Create, Edit } from './views/TableUser'
+
 const store = configStore();
 const loggedIn = localStorage.getItem('auth')
 class App extends React.Component {
-	
+
 	render() {
 		return (
 			<Provider store={store}>
@@ -25,9 +27,10 @@ class App extends React.Component {
 					<Switch>
 						<>
 							<Route exact path="/" component={Home} />
-							<Route path="/users" render={() => <Layouts><TableUser></TableUser></Layouts>} ></Route>
+							<Route exact path="/users" render={() => <Layouts><Table></Table></Layouts>} ></Route>
+							<Route exact path="/users/create" render={() => <Layouts><Create></Create></Layouts>} ></Route>
+							<Route exact path="/users/edit" render={() => <Layouts><Edit></Edit></Layouts>} ></Route>
 							<Route path="/profile" render={() => <Layouts><Profile></Profile></Layouts>} ></Route>
-
 							{!loggedIn && <Redirect to="/" />}
 						</>
 					</Switch>

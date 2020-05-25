@@ -56,7 +56,6 @@ class Home extends Component {
                             <Col md={{ span: 6, offset: 3 }}>
                                 <Form
                                     name="basic"
-                                    initialValues={{ remember: true }}
                                     onFinish={this.onFinish}
                                     onFinishFailed={this.onFinishFailed}
                                 >
